@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+
+# 忽略上传的文件，但保留目录结构
+uploads/**/*
+!uploads/.gitkeep
+!uploads/**/.gitkeep
