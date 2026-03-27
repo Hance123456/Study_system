@@ -38,6 +38,7 @@ const difficultyMap: Record<number, { text: string; color: string }> = {
 
 const CardPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [ttsLoading, setTtsLoading] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 10, total: 0 });
@@ -93,6 +94,37 @@ const CardPage: React.FC = () => {
       console.error('上传音频失败:', err);
       message.error('上传音频失败');
       onError && onError(err as any);
+    }
+  };
+
+  // 一键生成语音并回填 audio_url（优先摘要，其次内容，再次标题）
+  const handleGenerateTts = async () => {
+    try {
+      const values = form.getFieldsValue();
+      const sourceText = (values.summary || values.content || values.title || '').trim();
+      if (!sourceText) {
+        message.warning('请先填写内容摘要或卡片内容');
+        return;
+      }
+
+      setTtsLoading(true);
+      const res = await request.post('/upload/tts', {
+        text: sourceText,
+        voice: 'zh-CN-XiaoxiaoNeural',
+        rate: '+0%',
+      });
+
+      if (res.code === 200 && res.data?.url) {
+        form.setFieldsValue({ audio_url: res.data.url });
+        message.success('语音生成成功，已自动填入音频URL');
+      } else {
+        message.error(res.message || '语音生成失败');
+      }
+    } catch (error) {
+      console.error('语音生成失败:', error);
+      message.error('语音生成失败');
+    } finally {
+      setTtsLoading(false);
     }
   };
 
@@ -346,9 +378,14 @@ const CardPage: React.FC = () => {
               placeholder="请输入音频URL（TTS语音），或点击下方按钮上传自动填写"
               style={{ marginBottom: 8 }}
             />
-            <Upload customRequest={handleUploadAudio} showUploadList={false}>
-              <Button type="link">上传音频并自动填写</Button>
-            </Upload>
+            <Space>
+              <Button type="link" onClick={handleGenerateTts} loading={ttsLoading}>
+                一键生成语音
+              </Button>
+              <Upload customRequest={handleUploadAudio} showUploadList={false}>
+                <Button type="link">上传音频并自动填写</Button>
+              </Upload>
+            </Space>
           </Form.Item>
           <Space style={{ width: '100%' }}>
             <Form.Item name="difficulty" label="难度" initialValue={1}>
