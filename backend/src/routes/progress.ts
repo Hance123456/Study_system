@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { query, insert, update } from '../utils/database';
 import { authUser } from '../middlewares/auth';
+import { localDateYMD } from '../utils/date';
 
 const router = Router();
 
@@ -29,15 +30,26 @@ router.post('/record', authUser, async (req: Request, res: Response) => {
       return res.status(400).json({ code: 400, message: '参数不完整' });
     }
 
-    // 记录学习日志
+    const today = localDateYMD();
+
+    // 「今日学习卡片数」= 当日去重后的卡片数，同一卡片多次进入只计 1 次（与首页展示语义一致）
+    let bumpDistinctCard = false;
+    if (action_type === 'view' || action_type === 'listen') {
+      const dup = await query<{ c: number }[]>(
+        `SELECT COUNT(*) as c FROM learning_logs 
+         WHERE user_id = ? AND card_id = ? AND log_date = ? 
+           AND action_type IN ('view','listen')`,
+        [userId, card_id, today]
+      );
+      bumpDistinctCard = (dup[0]?.c || 0) === 0;
+    }
+
     await insert(
-      `INSERT INTO learning_logs (user_id, card_id, course_id, action_type, duration, learning_mode) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [userId, card_id, course_id || null, action_type, duration || 0, learning_mode || 'static']
+      `INSERT INTO learning_logs (user_id, card_id, course_id, action_type, duration, learning_mode, log_date) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [userId, card_id, course_id || null, action_type, duration || 0, learning_mode || 'static', today]
     );
 
-    // 更新每日统计
-    const today = new Date().toISOString().split('T')[0];
     const existingStats = await query<any[]>(
       'SELECT id FROM user_daily_stats WHERE user_id = ? AND stat_date = ?',
       [userId, today]
@@ -46,16 +58,16 @@ router.post('/record', authUser, async (req: Request, res: Response) => {
     if (existingStats.length === 0) {
       await insert(
         `INSERT INTO user_daily_stats (user_id, stat_date, study_duration, cards_learned) 
-         VALUES (?, ?, ?, 1)`,
-        [userId, today, duration || 0]
+         VALUES (?, ?, ?, ?)`,
+        [userId, today, duration || 0, bumpDistinctCard ? 1 : 0]
       );
     } else {
       await update(
         `UPDATE user_daily_stats 
          SET study_duration = study_duration + ?, 
-             cards_learned = cards_learned + 1 
+             cards_learned = cards_learned + ? 
          WHERE user_id = ? AND stat_date = ?`,
-        [duration || 0, userId, today]
+        [duration || 0, bumpDistinctCard ? 1 : 0, userId, today]
       );
     }
 

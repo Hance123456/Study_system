@@ -97,13 +97,18 @@ const CardPage: React.FC = () => {
     }
   };
 
-  // 一键生成语音并回填 audio_url（优先摘要，其次内容，再次标题）
+  // 一键生成语音并回填 audio_url：使用卡片标题 + 卡片内容（不含摘要）
   const handleGenerateTts = async () => {
     try {
       const values = form.getFieldsValue();
-      const sourceText = (values.summary || values.content || values.title || '').trim();
+      const title = (values.title || '').trim();
+      const content = (values.content || '').trim();
+      const parts: string[] = [];
+      if (title) parts.push(title);
+      if (content) parts.push(content);
+      const sourceText = parts.join('。').trim();
       if (!sourceText) {
-        message.warning('请先填写内容摘要或卡片内容');
+        message.warning('请先填写卡片标题和卡片内容');
         return;
       }
 
@@ -373,7 +378,11 @@ const CardPage: React.FC = () => {
               <Button type="link">上传图片并自动填写</Button>
             </Upload>
           </Form.Item>
-          <Form.Item name="audio_url" label="音频URL">
+          <Form.Item
+            name="audio_url"
+            label="音频URL"
+            extra="一键生成语音会朗读上方「卡片标题」与「卡片内容」（中间用停顿连接），不使用「内容摘要」。"
+          >
             <Input
               placeholder="请输入音频URL（TTS语音），或点击下方按钮上传自动填写"
               style={{ marginBottom: 8 }}

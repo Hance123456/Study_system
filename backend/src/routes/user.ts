@@ -6,6 +6,7 @@ import axios from 'axios';
 import { query, insert, update } from '../utils/database';
 import { config } from '../config';
 import { authUser } from '../middlewares/auth';
+import { localDateYMD } from '../utils/date';
 
 const router = Router();
 
@@ -246,7 +247,17 @@ router.get('/stats', authUser, async (req: Request, res: Response) => {
       FROM user_progress WHERE user_id = ?
     `, [userId]);
 
-    // 获取今日学习统计
+    const todayStr = localDateYMD();
+
+    const todayDistinctCards = await query<{ n: number }[]>(
+      `SELECT COUNT(DISTINCT card_id) as n FROM learning_logs 
+       WHERE user_id = ? AND card_id IS NOT NULL 
+         AND action_type IN ('view','listen')
+         AND (log_date = ? OR DATE(created_at) = ?)`,
+      [userId, todayStr, todayStr],
+    );
+    const todayCardsFromLogs = Number(todayDistinctCards[0]?.n || 0);
+
     const todayResult = await query<any[]>(`
       SELECT 
         COALESCE(study_duration, 0) as today_duration,
@@ -256,8 +267,8 @@ router.get('/stats', authUser, async (req: Request, res: Response) => {
         COALESCE(correct_count, 0) as today_correct,
         COALESCE(is_checked_in, 0) as is_checked_in
       FROM user_daily_stats 
-      WHERE user_id = ? AND stat_date = CURDATE()
-    `, [userId]);
+      WHERE user_id = ? AND stat_date = ?
+    `, [userId, todayStr]);
 
     // 获取学习天数
     const studyDaysResult = await query<any[]>(`
@@ -297,7 +308,7 @@ router.get('/stats', authUser, async (req: Request, res: Response) => {
         total_reviews: stats.total_reviews || 0,
         study_days: studyDays,
         total_duration: totalDuration,
-        today_cards: today.today_cards || 0,
+        today_cards: todayCardsFromLogs,
         today_reviews: today.today_reviews || 0,
         today_quizzes: today.today_quizzes || 0,
         today_correct: today.today_correct || 0,

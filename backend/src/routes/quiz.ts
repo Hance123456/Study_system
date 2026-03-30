@@ -2,6 +2,9 @@ import { Router, Request, Response } from 'express';
 import { query, insert, update } from '../utils/database';
 import { authUser } from '../middlewares/auth';
 import { authAdmin } from '../middlewares/auth';
+import { parseQuizOptions } from '../utils/quizOptions';
+import { gradeQuizSubmission } from '../utils/quizAnswer';
+import { localDateYMD } from '../utils/date';
 
 const router = Router();
 
@@ -32,17 +35,25 @@ interface QuizRecord {
 router.get('/card/:cardId', authUser, async (req: Request, res: Response) => {
   try {
     const cardId = Number(req.params.cardId);
+    if (!Number.isFinite(cardId) || cardId <= 0) {
+      return res.status(400).json({ code: 400, message: '无效的卡片ID' });
+    }
 
     const quizzes = await query<Quiz[]>(
-      'SELECT id, card_id, question, question_type, options FROM quizzes WHERE card_id = ? AND status = 1 ORDER BY sort_order ASC',
+      'SELECT id, card_id, question, question_type, options FROM quizzes WHERE card_id = ? AND status = 1 ORDER BY id ASC',
       [cardId]
     );
 
-    // 解析 options JSON
-    const result = quizzes.map(q => ({
-      ...q,
-      options: q.options ? JSON.parse(q.options) : [],
-    }));
+    const result = quizzes.map((q) => {
+      let options = parseQuizOptions(q.options as unknown);
+      if (options.length === 0 && Number(q.question_type) === 3) {
+        options = ['对', '错'];
+      }
+      return {
+        ...q,
+        options,
+      };
+    });
 
     res.json({ code: 200, data: result });
   } catch (error) {
@@ -72,7 +83,11 @@ router.post('/submit', authUser, async (req: Request, res: Response) => {
     }
 
     const quiz = quizzes[0];
-    const isCorrect = String(user_answer).trim().toLowerCase() === String(quiz.answer).trim().toLowerCase();
+    const { isCorrect, display } = gradeQuizSubmission(user_answer, {
+      answer: quiz.answer,
+      options: quiz.options,
+      question_type: quiz.question_type,
+    });
 
     // 记录答题
     await insert(
@@ -89,8 +104,7 @@ router.post('/submit', authUser, async (req: Request, res: Response) => {
       [isCorrect ? 1 : 0, isCorrect ? 0 : 1, userId, quiz.card_id]
     );
 
-    // 更新每日统计
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateYMD();
     const existingStats = await query<any[]>(
       'SELECT id FROM user_daily_stats WHERE user_id = ? AND stat_date = ?',
       [userId, today]
@@ -115,7 +129,7 @@ router.post('/submit', authUser, async (req: Request, res: Response) => {
       code: 200,
       data: {
         is_correct: isCorrect,
-        correct_answer: quiz.answer,
+        correct_answer: display,
         explanation: quiz.explanation,
       },
     });
@@ -155,10 +169,9 @@ router.get('/wrong', authUser, async (req: Request, res: Response) => {
       [userId, userId]
     );
 
-    // 解析 options JSON
-    const result = records.map(r => ({
+    const result = records.map((r) => ({
       ...r,
-      options: r.options ? JSON.parse(r.options) : [],
+      options: parseQuizOptions(r.options as unknown),
     }));
 
     res.json({

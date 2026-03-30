@@ -1,14 +1,31 @@
 import { Router, Request, Response } from 'express';
 import { query, insert, update } from '../utils/database';
 import { authUser } from '../middlewares/auth';
+import { localDateYMD } from '../utils/date';
 
 const router = Router();
+
+function rowDateToYMD(v: unknown): string {
+  if (v instanceof Date) return localDateYMD(v);
+  if (typeof v === 'string') return v.slice(0, 10);
+  return localDateYMD(new Date(String(v)));
+}
+
+function addDaysYMD(ymd: string, deltaDays: number): string {
+  const [y, m, d] = ymd.split('-').map(Number);
+  const dt = new Date(y, m - 1, d + deltaDays);
+  return localDateYMD(dt);
+}
+
+function isCheckedInDb(v: unknown): boolean {
+  return v === true || Number(v) === 1;
+}
 
 // 打卡
 router.post('/', authUser, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateYMD();
 
     // 检查今日是否已打卡
     const existingStats = await query<any[]>(
@@ -16,7 +33,7 @@ router.post('/', authUser, async (req: Request, res: Response) => {
       [userId, today]
     );
 
-    if (existingStats.length > 0 && existingStats[0].is_checked_in === 1) {
+    if (existingStats.length > 0 && isCheckedInDb(existingStats[0].is_checked_in)) {
       return res.status(400).json({ code: 400, message: '今日已打卡' });
     }
 
@@ -58,15 +75,11 @@ router.post('/', authUser, async (req: Request, res: Response) => {
     `, [userId]);
 
     let streak = 0;
-    const dates = consecutiveResult.map(r => r.stat_date);
-    const todayDate = new Date(today);
-    
+    const dates = consecutiveResult.map((r) => rowDateToYMD(r.stat_date));
+
     for (let i = 0; i < dates.length; i++) {
-      const expectedDate = new Date(todayDate);
-      expectedDate.setDate(expectedDate.getDate() - i);
-      const expectedStr = expectedDate.toISOString().split('T')[0];
-      
-      if (dates[i].toISOString().split('T')[0] === expectedStr) {
+      const expectedStr = addDaysYMD(today, -i);
+      if (dates[i] === expectedStr) {
         streak++;
       } else {
         break;
@@ -91,14 +104,14 @@ router.post('/', authUser, async (req: Request, res: Response) => {
 router.get('/status', authUser, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateYMD();
 
     const stats = await query<any[]>(
       'SELECT is_checked_in FROM user_daily_stats WHERE user_id = ? AND stat_date = ?',
       [userId, today]
     );
 
-    const isCheckedIn = stats.length > 0 && stats[0].is_checked_in === 1;
+    const isCheckedIn = stats.length > 0 && isCheckedInDb(stats[0].is_checked_in);
 
     // 计算连续打卡天数
     const consecutiveResult = await query<any[]>(`
@@ -109,19 +122,12 @@ router.get('/status', authUser, async (req: Request, res: Response) => {
     `, [userId]);
 
     let streak = 0;
-    const dates = consecutiveResult.map(r => {
-      const d = new Date(r.stat_date);
-      return d.toISOString().split('T')[0];
-    });
-    
-    const checkDate = isCheckedIn ? today : new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    const startDate = new Date(checkDate);
-    
+    const dates = consecutiveResult.map((r) => rowDateToYMD(r.stat_date));
+
+    const checkDate = isCheckedIn ? today : addDaysYMD(today, -1);
+
     for (let i = 0; i < dates.length; i++) {
-      const expectedDate = new Date(startDate);
-      expectedDate.setDate(expectedDate.getDate() - i);
-      const expectedStr = expectedDate.toISOString().split('T')[0];
-      
+      const expectedStr = addDaysYMD(checkDate, -i);
       if (dates[i] === expectedStr) {
         streak++;
       } else {
