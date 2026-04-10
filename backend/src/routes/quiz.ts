@@ -139,7 +139,7 @@ router.post('/submit', authUser, async (req: Request, res: Response) => {
   }
 });
 
-// 获取错题列表
+// 获取错题列表（连续答对 2 次后自动移出）
 router.get('/wrong', authUser, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
@@ -148,25 +148,77 @@ router.get('/wrong', authUser, async (req: Request, res: Response) => {
     const pageSizeNum = parseInt(pageSize as string) || 20;
 
     const countResult = await query<{ total: number }[]>(
-      `SELECT COUNT(DISTINCT qr.quiz_id) as total 
-       FROM quiz_records qr 
-       WHERE qr.user_id = ? AND qr.is_correct = 0`,
-      [userId]
+      `SELECT COUNT(*) as total
+       FROM (
+         SELECT s.quiz_id
+         FROM (
+           SELECT
+             r.quiz_id,
+             MAX(r.id) as latest_record_id,
+             MAX(CASE WHEN r.is_correct = 0 THEN r.id ELSE NULL END) as latest_wrong_id
+           FROM quiz_records r
+           WHERE r.user_id = ?
+           GROUP BY r.quiz_id
+           HAVING latest_wrong_id IS NOT NULL
+         ) s
+         LEFT JOIN quiz_records c
+           ON c.user_id = ?
+          AND c.quiz_id = s.quiz_id
+          AND c.is_correct = 1
+          AND c.id > s.latest_wrong_id
+         GROUP BY s.quiz_id
+         HAVING COUNT(c.id) < 2
+       ) t`,
+      [userId, userId],
     );
 
     const offset = (pageNum - 1) * pageSizeNum;
     const records = await query<any[]>(
-      `SELECT DISTINCT qr.quiz_id, q.question, q.question_type, q.options, q.answer, q.explanation,
-              c.title as card_title, co.name as course_name,
-              (SELECT user_answer FROM quiz_records WHERE quiz_id = qr.quiz_id AND user_id = ? ORDER BY created_at DESC LIMIT 1) as last_answer
-       FROM quiz_records qr 
-       JOIN quizzes q ON qr.quiz_id = q.id 
-       JOIN cards c ON q.card_id = c.id 
-       JOIN courses co ON c.course_id = co.id 
-       WHERE qr.user_id = ? AND qr.is_correct = 0 
-       ORDER BY qr.created_at DESC 
+      `SELECT
+         aw.quiz_id,
+         q.question,
+         q.question_type,
+         q.options,
+         q.answer,
+         q.explanation,
+         c.title as card_title,
+         co.name as course_name,
+         latest.user_answer as last_answer,
+         wrong_rec.created_at as last_wrong_at,
+         aw.correct_streak,
+         (2 - aw.correct_streak) as remaining_to_clear
+       FROM (
+         SELECT
+           s.quiz_id,
+           s.latest_record_id,
+           s.latest_wrong_id,
+           COUNT(c.id) as correct_streak
+         FROM (
+           SELECT
+             r.quiz_id,
+             MAX(r.id) as latest_record_id,
+             MAX(CASE WHEN r.is_correct = 0 THEN r.id ELSE NULL END) as latest_wrong_id
+           FROM quiz_records r
+           WHERE r.user_id = ?
+           GROUP BY r.quiz_id
+           HAVING latest_wrong_id IS NOT NULL
+         ) s
+         LEFT JOIN quiz_records c
+           ON c.user_id = ?
+          AND c.quiz_id = s.quiz_id
+          AND c.is_correct = 1
+          AND c.id > s.latest_wrong_id
+         GROUP BY s.quiz_id, s.latest_record_id, s.latest_wrong_id
+         HAVING COUNT(c.id) < 2
+       ) aw
+       JOIN quiz_records latest ON latest.id = aw.latest_record_id
+       JOIN quiz_records wrong_rec ON wrong_rec.id = aw.latest_wrong_id
+       JOIN quizzes q ON aw.quiz_id = q.id
+       JOIN cards c ON q.card_id = c.id
+       JOIN courses co ON c.course_id = co.id
+       ORDER BY wrong_rec.created_at DESC
        LIMIT ${pageSizeNum} OFFSET ${offset}`,
-      [userId, userId]
+      [userId, userId],
     );
 
     const result = records.map((r) => ({

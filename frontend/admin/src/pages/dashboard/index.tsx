@@ -3,6 +3,7 @@ import { Card, Row, Col, Statistic } from 'antd';
 import { BookOutlined, CreditCardOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
 import { getCourseList } from '../../services/course';
 import { getCardList } from '../../services/card';
+import { getAdminStats } from '../../services/admin';
 
 const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState({
@@ -15,16 +16,17 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [courseRes, cardRes] = await Promise.all([
+        const [courseRes, cardRes, adminStatsRes] = await Promise.all([
           getCourseList(),
           getCardList({ pageSize: 1 }),
+          getAdminStats().catch(() => null),
         ]);
         
         setStats({
           courseCount: courseRes.data.length,
           cardCount: cardRes.data.pagination.total,
-          userCount: 0,
-          viewCount: 0,
+          userCount: adminStatsRes ? adminStatsRes.data.userCount : 0,
+          viewCount: adminStatsRes ? adminStatsRes.data.viewCount : 0,
         });
       } catch (error) {
         console.error('获取统计数据失败:', error);

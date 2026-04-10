@@ -87,8 +87,13 @@ export const deleteFile = (filePath: string): boolean => {
   }
 };
 
-// 获取文件的 URL 路径
-export const getFileUrl = (filePath: string, baseUrl: string): string => {
+// 获取文件的相对 URL 路径（推荐存入数据库，便于迁移环境）
+export const getFileRelativeUrl = (filePath: string): string => {
   const relativePath = path.relative(config.upload.baseDir, filePath);
-  return `${baseUrl}/uploads/${relativePath.replace(/\\/g, '/')}`;
+  return `/uploads/${relativePath.replace(/\\/g, '/')}`;
+};
+
+// 获取文件的绝对 URL（仅用于返回给前端展示/下载时拼接）
+export const getFileUrl = (filePath: string, baseUrl: string): string => {
+  return `${baseUrl}${getFileRelativeUrl(filePath)}`;
 };

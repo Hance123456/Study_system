@@ -16,6 +16,10 @@ interface Admin {
   status: number;
 }
 
+interface CountRow {
+  total: number;
+}
+
 // 管理员登录
 router.post('/login', async (req: Request, res: Response) => {
   try {
@@ -136,6 +140,29 @@ router.put('/password', authAdmin, async (req: Request, res: Response) => {
 
     res.json({ code: 200, message: '密码修改成功' });
   } catch (error) {
+    res.status(500).json({ code: 500, message: '服务器错误' });
+  }
+});
+
+// 仪表盘统计（管理员）
+router.get('/stats', authAdmin, async (req: Request, res: Response) => {
+  try {
+    const [userRows, viewRows] = await Promise.all([
+      query<CountRow[]>('SELECT COUNT(*) as total FROM users WHERE status = 1'),
+      query<{ total_views: number }[]>(
+        'SELECT COALESCE(SUM(view_count), 0) as total_views FROM cards WHERE status = 1',
+      ),
+    ]);
+
+    res.json({
+      code: 200,
+      data: {
+        userCount: userRows[0]?.total || 0,
+        viewCount: viewRows[0]?.total_views || 0,
+      },
+    });
+  } catch (error) {
+    console.error('获取仪表盘统计失败:', error);
     res.status(500).json({ code: 500, message: '服务器错误' });
   }
 });

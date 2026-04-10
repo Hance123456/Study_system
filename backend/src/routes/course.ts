@@ -21,20 +21,28 @@ router.get('/list', async (req: Request, res: Response) => {
   try {
     const { status, keyword } = req.query;
     
-    let sql = 'SELECT * FROM courses WHERE 1=1';
+    let sql = `
+      SELECT 
+        co.*,
+        COUNT(c.id) as card_count
+      FROM courses co
+      LEFT JOIN cards c 
+        ON c.course_id = co.id AND c.status = 1
+      WHERE 1=1
+    `;
     const params: any[] = [];
 
     if (status !== undefined) {
-      sql += ' AND status = ?';
+      sql += ' AND co.status = ?';
       params.push(Number(status));
     }
 
     if (keyword) {
-      sql += ' AND (name LIKE ? OR description LIKE ?)';
+      sql += ' AND (co.name LIKE ? OR co.description LIKE ?)';
       params.push(`%${keyword}%`, `%${keyword}%`);
     }
 
-    sql += ' ORDER BY sort_order ASC, id DESC';
+    sql += ' GROUP BY co.id ORDER BY co.sort_order ASC, co.id DESC';
 
     const courses = await query<Course[]>(sql, params);
 
@@ -54,7 +62,14 @@ router.get('/detail/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const courses = await query<Course[]>(
-      'SELECT * FROM courses WHERE id = ?',
+      `SELECT 
+         co.*,
+         COUNT(c.id) as card_count
+       FROM courses co
+       LEFT JOIN cards c 
+         ON c.course_id = co.id AND c.status = 1
+       WHERE co.id = ?
+       GROUP BY co.id`,
       [id]
     );
 

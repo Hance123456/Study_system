@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { uploadImage, uploadAudio, getFileUrl, deleteFile } from '../utils/upload';
+import { uploadImage, uploadAudio, getFileRelativeUrl, deleteFile } from '../utils/upload';
 import path from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
@@ -72,8 +72,7 @@ router.post('/image', uploadImage.single('file'), (req: Request, res: Response) 
       return res.status(400).json({ code: 400, message: '请选择要上传的图片' });
     }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const fileUrl = getFileUrl(req.file.path, baseUrl);
+    const fileUrl = getFileRelativeUrl(req.file.path);
 
     res.json({
       code: 200,
@@ -98,12 +97,11 @@ router.post('/images', uploadImage.array('files', 10), (req: Request, res: Respo
       return res.status(400).json({ code: 400, message: '请选择要上传的图片' });
     }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
     const results = files.map((file) => ({
       filename: file.filename,
       originalName: file.originalname,
       size: file.size,
-      url: getFileUrl(file.path, baseUrl),
+      url: getFileRelativeUrl(file.path),
     }));
 
     res.json({
@@ -123,8 +121,7 @@ router.post('/audio', uploadAudio.single('file'), (req: Request, res: Response) 
       return res.status(400).json({ code: 400, message: '请选择要上传的音频' });
     }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const fileUrl = getFileUrl(req.file.path, baseUrl);
+    const fileUrl = getFileRelativeUrl(req.file.path);
 
     res.json({
       code: 200,
@@ -165,8 +162,7 @@ router.post('/tts', async (req: Request, res: Response) => {
 
     await generateTtsAudio(content, outputPath, voice || 'zh-CN-XiaoxiaoNeural', rate || '+0%');
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const fileUrl = getFileUrl(outputPath, baseUrl);
+    const fileUrl = getFileRelativeUrl(outputPath);
 
     res.json({
       code: 200,
@@ -190,9 +186,9 @@ router.delete('/file', (req: Request, res: Response) => {
       return res.status(400).json({ code: 400, message: '请提供文件 URL' });
     }
 
-    // 从 URL 中提取相对路径
-    const urlPath = new URL(url).pathname;
-    const relativePath = urlPath.replace('/uploads/', '');
+    // 从 URL 中提取相对路径（兼容：完整 URL 或 /uploads/... 相对路径）
+    const urlPath = String(url || '').includes('://') ? new URL(url).pathname : String(url || '');
+    const relativePath = urlPath.replace(/^\/?uploads\//, '');
     const filePath = path.join(config.upload.baseDir, relativePath);
 
     if (deleteFile(filePath)) {

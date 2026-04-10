@@ -12,6 +12,11 @@ export interface AdminInfo {
   role: string;
 }
 
+export interface AdminDashboardStats {
+  userCount: number;
+  viewCount: number;
+}
+
 export interface LoginResult {
   token: string;
   admin: AdminInfo;
@@ -30,4 +35,9 @@ export const getAdminInfo = () => {
 // 修改密码
 export const changePassword = (data: { oldPassword: string; newPassword: string }) => {
   return request.put('/admin/password', data);
+};
+
+// 仪表盘统计
+export const getAdminStats = () => {
+  return request.get<any, { code: number; data: AdminDashboardStats }>('/admin/stats');
 };

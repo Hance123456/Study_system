@@ -20,6 +20,17 @@ interface UserProgress {
   next_review_at: string;
 }
 
+interface StudyQueueCard {
+  id: number;
+  course_id: number;
+  title: string;
+  summary: string;
+  difficulty: number;
+  sort_order: number;
+  mastery_level: number;
+  priority_score?: number;
+}
+
 // 记录学习行为
 router.post('/record', authUser, async (req: Request, res: Response) => {
   try {
@@ -216,6 +227,78 @@ router.get('/card/:cardId', authUser, async (req: Request, res: Response) => {
 
     res.json({ code: 200, data: progress[0] });
   } catch (error) {
+    res.status(500).json({ code: 500, message: '服务器错误' });
+  }
+});
+
+// 获取课程学习队列（连续学习页使用：精通(4)隐藏，低掌握优先，同层按风险分排序）
+router.get('/course/:courseId/study-queue', authUser, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const courseId = Number(req.params.courseId);
+
+    const cards = await query<StudyQueueCard[]>(
+      `SELECT
+         c.id, c.course_id, c.title, c.summary, c.difficulty, c.sort_order,
+         COALESCE(up.mastery_level, 0) as mastery_level,
+         (
+           COALESCE((4 - COALESCE(up.mastery_level, 0)) * 100, 0) +
+           COALESCE(
+             (up.wrong_count / NULLIF((up.correct_count + up.wrong_count), 0)) * 40,
+             0
+           ) +
+           LEAST(
+             COALESCE(TIMESTAMPDIFF(DAY, COALESCE(up.last_study_at, c.created_at), NOW()), 30),
+             30
+           )
+         ) as priority_score
+       FROM cards c
+       LEFT JOIN user_progress up ON up.card_id = c.id AND up.user_id = ?
+       WHERE c.course_id = ? AND c.status = 1
+         AND COALESCE(up.mastery_level, 0) < 4
+       ORDER BY COALESCE(up.mastery_level, 0) ASC, priority_score DESC, c.sort_order ASC, c.id ASC`,
+      [userId, courseId],
+    );
+
+    res.json({ code: 200, data: cards });
+  } catch (error) {
+    console.error('获取课程学习队列错误:', error);
+    res.status(500).json({ code: 500, message: '服务器错误' });
+  }
+});
+
+// 获取课程学习列表（按掌握度从低到高，精通(4)隐藏；同掌握度按学习风险优先）
+router.get('/course/:courseId/study-list', authUser, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const courseId = Number(req.params.courseId);
+
+    const cards = await query<StudyQueueCard[]>(
+      `SELECT
+         c.id, c.course_id, c.title, c.summary, c.difficulty, c.sort_order,
+         COALESCE(up.mastery_level, 0) as mastery_level,
+         (
+           COALESCE((4 - COALESCE(up.mastery_level, 0)) * 100, 0) +
+           COALESCE(
+             (up.wrong_count / NULLIF((up.correct_count + up.wrong_count), 0)) * 40,
+             0
+           ) +
+           LEAST(
+             COALESCE(TIMESTAMPDIFF(DAY, COALESCE(up.last_study_at, c.created_at), NOW()), 30),
+             30
+           )
+         ) as priority_score
+       FROM cards c
+       LEFT JOIN user_progress up ON up.card_id = c.id AND up.user_id = ?
+       WHERE c.course_id = ? AND c.status = 1
+         AND COALESCE(up.mastery_level, 0) < 4
+       ORDER BY COALESCE(up.mastery_level, 0) ASC, priority_score DESC, c.sort_order ASC, c.id ASC`,
+      [userId, courseId],
+    );
+
+    res.json({ code: 200, data: cards });
+  } catch (error) {
+    console.error('获取课程学习列表错误:', error);
     res.status(500).json({ code: 500, message: '服务器错误' });
   }
 });

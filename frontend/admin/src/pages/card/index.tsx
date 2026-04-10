@@ -18,6 +18,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import {
   getCardList,
+  getCardDetail,
   createCard,
   updateCard,
   deleteCard,
@@ -36,6 +37,15 @@ const difficultyMap: Record<number, { text: string; color: string }> = {
   3: { text: '困难', color: 'red' },
 };
 
+const normalizeCardFields = (row: any): Card => {
+  return {
+    ...row,
+    image: String((row && (row.image ?? row.image_url ?? row.cardimage ?? row.card_image ?? '')) || ''),
+    audio_url: String((row && (row.audio_url ?? row.audio ?? '')) || ''),
+    summary: String((row && (row.summary ?? '')) || ''),
+  } as Card;
+};
+
 const CardPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [ttsLoading, setTtsLoading] = useState(false);
@@ -46,6 +56,21 @@ const CardPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [form] = Form.useForm();
+  const currentImageUrl = Form.useWatch('image', form);
+  const currentAudioUrl = Form.useWatch('audio_url', form);
+
+  // 编辑模式下：上传成功后自动持久化到数据库，避免“只回填未保存”的误解
+  const persistFieldIfEditing = async (field: Partial<Card>) => {
+    if (!editingCard) return;
+    try {
+      await updateCard(editingCard.id, field);
+      setEditingCard({ ...editingCard, ...field });
+      fetchCards(pagination.page, pagination.pageSize);
+    } catch (err) {
+      console.error('自动保存字段失败:', err);
+      message.warning('上传成功，但自动保存失败，请点击“确定”手动保存');
+    }
+  };
 
   // 上传配图并自动回填 URL
   const handleUploadImage = async (options: UploadRequestOption) => {
@@ -60,8 +85,9 @@ const CardPage: React.FC = () => {
 
       if (res.code === 200 && res.data?.url) {
         form.setFieldsValue({ image: res.data.url });
+        await persistFieldIfEditing({ image: res.data.url });
         onSuccess && onSuccess(res as any, file as any);
-        message.success('图片上传成功');
+        message.success(editingCard ? '图片上传并保存成功' : '图片上传成功（请点击确定保存卡片）');
       } else {
         throw new Error(res.message || '上传失败');
       }
@@ -85,8 +111,9 @@ const CardPage: React.FC = () => {
 
       if (res.code === 200 && res.data?.url) {
         form.setFieldsValue({ audio_url: res.data.url });
+        await persistFieldIfEditing({ audio_url: res.data.url });
         onSuccess && onSuccess(res as any, file as any);
-        message.success('音频上传成功');
+        message.success(editingCard ? '音频上传并保存成功' : '音频上传成功（请点击确定保存卡片）');
       } else {
         throw new Error(res.message || '上传失败');
       }
@@ -121,6 +148,7 @@ const CardPage: React.FC = () => {
 
       if (res.code === 200 && res.data?.url) {
         form.setFieldsValue({ audio_url: res.data.url });
+        await persistFieldIfEditing({ audio_url: res.data.url });
         message.success('语音生成成功，已自动填入音频URL');
       } else {
         message.error(res.message || '语音生成失败');
@@ -137,7 +165,7 @@ const CardPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await getCardList({ ...filters, page, pageSize });
-      setCards(res.data.list);
+      setCards((res.data.list || []).map((row: any) => normalizeCardFields(row)));
       setPagination(res.data.pagination);
     } catch (error) {
       console.error('获取卡片列表失败:', error);
@@ -173,10 +201,21 @@ const CardPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleEdit = (record: Card) => {
-    setEditingCard(record);
-    form.setFieldsValue(record);
-    setModalVisible(true);
+  const handleEdit = async (record: Card) => {
+    try {
+      // 以详情接口为准，避免列表数据延迟/字段缺失导致 image 看不到
+      const detailRes = await getCardDetail(record.id);
+      const normalized = normalizeCardFields(detailRes.data);
+      setEditingCard(normalized);
+      form.setFieldsValue(normalized);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('获取卡片详情失败，回退使用列表数据:', error);
+      const normalized = normalizeCardFields(record);
+      setEditingCard(normalized);
+      form.setFieldsValue(normalized);
+      setModalVisible(true);
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -294,10 +333,13 @@ const CardPage: React.FC = () => {
         <Space>
           <Select
             placeholder="选择课程"
-            allowClear
             style={{ width: 150 }}
-            onChange={(value) => setFilters({ ...filters, course_id: value })}
+            defaultValue={0}
+            onChange={(value) =>
+              setFilters({ ...filters, course_id: Number(value) === 0 ? undefined : Number(value) })
+            }
           >
+            <Select.Option value={0}>全部课程</Select.Option>
             {courses.map((course) => (
               <Select.Option key={course.id} value={course.id}>
                 {course.name}
@@ -369,24 +411,25 @@ const CardPage: React.FC = () => {
           <Form.Item name="summary" label="内容摘要">
             <TextArea rows={2} placeholder="请输入内容摘要（用于列表展示）" />
           </Form.Item>
-          <Form.Item name="image" label="配图URL">
-            <Input
-              placeholder="请输入配图URL，或点击下方按钮上传自动填写"
-              style={{ marginBottom: 8 }}
-            />
+          <Form.Item name="image" label="配图资源">
             <Upload customRequest={handleUploadImage} showUploadList={false}>
               <Button type="link">上传图片并自动填写</Button>
             </Upload>
+            {currentImageUrl ? (
+              <div style={{ fontSize: 12, color: '#666', marginTop: 4, wordBreak: 'break-all' }}>
+                当前图片URL：{currentImageUrl}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+                尚未上传图片
+              </div>
+            )}
           </Form.Item>
           <Form.Item
             name="audio_url"
-            label="音频URL"
+            label="音频资源"
             extra="一键生成语音会朗读上方「卡片标题」与「卡片内容」（中间用停顿连接），不使用「内容摘要」。"
           >
-            <Input
-              placeholder="请输入音频URL（TTS语音），或点击下方按钮上传自动填写"
-              style={{ marginBottom: 8 }}
-            />
             <Space>
               <Button type="link" onClick={handleGenerateTts} loading={ttsLoading}>
                 一键生成语音
@@ -395,6 +438,15 @@ const CardPage: React.FC = () => {
                 <Button type="link">上传音频并自动填写</Button>
               </Upload>
             </Space>
+            {currentAudioUrl ? (
+              <div style={{ fontSize: 12, color: '#666', marginTop: 4, wordBreak: 'break-all' }}>
+                当前音频URL：{currentAudioUrl}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+                尚未生成或上传音频
+              </div>
+            )}
           </Form.Item>
           <Space style={{ width: '100%' }}>
             <Form.Item name="difficulty" label="难度" initialValue={1}>
