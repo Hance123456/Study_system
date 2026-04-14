@@ -49,6 +49,11 @@ export const getQuizList = (params: {
   return request.get<any, { code: number; data: QuizListResponse }>('/quiz/list', { params });
 };
 
+// 获取题目详情
+export const getQuizDetail = (id: number) => {
+  return request.get<any, { code: number; data: Quiz }>(`/quiz/detail/${id}`);
+};
+
 // 创建题目
 export const createQuiz = (data: CreateQuizData) => {
   return request.post<any, { code: number; data: { id: number } }>('/quiz/create', data);

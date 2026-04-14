@@ -72,7 +72,7 @@ router.get('/list', async (req: Request, res: Response) => {
 
     // 分页 - 直接拼接数字到 SQL 中，避免参数类型问题
     const offset = (page - 1) * pageSize;
-    sql += ` ORDER BY c.sort_order ASC, c.id DESC LIMIT ${pageSize} OFFSET ${offset}`;
+    sql += ` ORDER BY c.sort_order ASC, c.id ASC LIMIT ${pageSize} OFFSET ${offset}`;
 
     const cards = await query<Card[]>(sql, params);
 
@@ -233,7 +233,7 @@ router.put('/update/:id', authAdmin, async (req: Request, res: Response) => {
   }
 });
 
-// 删除卡片（需要管理员权限）
+// 删除卡片（需要管理员权限，物理删除）
 router.delete('/delete/:id', authAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -244,8 +244,8 @@ router.delete('/delete/:id', authAdmin, async (req: Request, res: Response) => {
       return res.status(404).json({ code: 404, message: '卡片不存在' });
     }
 
-    // 软删除（设置 status = 0）
-    await update('UPDATE cards SET status = 0 WHERE id = ?', [id]);
+    // 物理删除（依赖外键级联删除关联的进度/复习/测验记录）
+    await update('DELETE FROM cards WHERE id = ?', [id]);
 
     // 更新课程卡片数量
     await update('UPDATE courses SET card_count = card_count - 1 WHERE id = ?', [cards[0].course_id]);

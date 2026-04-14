@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import path from 'path';
 import { config } from './config';
 import { testConnection } from './utils/database';
 
@@ -18,12 +17,12 @@ import checkinRouter from './routes/checkin';
 const app = express();
 
 // 中间件配置
-app.use(cors());
+app.use(cors({ origin: config.corsOrigin === '*' ? true : config.corsOrigin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 静态文件服务
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(config.upload.baseDir));
 
 // API 路由
 app.use('/api/upload', uploadRouter);
@@ -84,11 +83,12 @@ const startServer = async () => {
     process.exit(1);
   }
 
-  app.listen(config.port, () => {
+  app.listen(Number(config.port), config.host, () => {
     console.log('========================================');
     console.log(`  Study System API Server`);
-    console.log(`  运行地址: http://localhost:${config.port}`);
-    console.log(`  上传目录: ${path.join(__dirname, '../uploads')}`);
+    console.log(`  运行环境: ${config.nodeEnv}`);
+    console.log(`  监听地址: http://${config.host}:${config.port}`);
+    console.log(`  上传目录: ${config.upload.baseDir}`);
     console.log('========================================');
     console.log('API 端点:');
     console.log('  POST   /api/admin/login       - 管理员登录');

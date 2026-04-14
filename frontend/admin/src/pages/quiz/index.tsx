@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Table,
   Button,
@@ -15,10 +15,11 @@ import {
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { getQuizList, createQuiz, updateQuiz, deleteQuiz } from '../../services/quiz';
+import { getQuizList, getQuizDetail, createQuiz, updateQuiz, deleteQuiz } from '../../services/quiz';
 import type { Quiz } from '../../services/quiz';
 import { getCardList } from '../../services/card';
 import type { Card as CardType } from '../../services/card';
+import { useLocation } from 'react-router-dom';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -44,6 +45,7 @@ function normalizeOptionsForForm(record: Quiz): string[] {
 }
 
 const QuizPage: React.FC = () => {
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [quizList, setQuizList] = useState<Quiz[]>([]);
   const [cardList, setCardList] = useState<CardType[]>([]);
@@ -52,11 +54,58 @@ const QuizPage: React.FC = () => {
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
   const [filterCardId, setFilterCardId] = useState<number | undefined>();
   const [form] = Form.useForm();
+  const editingQuizRef = useRef<Quiz | null>(null);
+
+  useEffect(() => {
+    const sp = new URLSearchParams(location.search);
+    const qCardId = Number(sp.get('cardId') || 0);
+    if (qCardId > 0) {
+      setFilterCardId(qCardId);
+      setPagination((prev) => ({ ...prev, current: 1 }));
+    }
+  }, [location.search]);
 
   useEffect(() => {
     fetchQuizList();
     fetchCardList();
   }, [pagination.current, filterCardId]);
+
+  const fillCreateDefaults = () => {
+    form.setFieldsValue({
+      card_id: filterCardId,
+      question_type: 1,
+      question: '',
+      options: ['', '', '', ''],
+      answer: '',
+      explanation: '',
+      sort_order: 0,
+    });
+  };
+
+  const fillEditForm = (record: Quiz) => {
+    const qType = Number(record.question_type || 1);
+    form.setFieldsValue({
+      card_id: record.card_id,
+      question_type: qType,
+      question: record.question || '',
+      explanation: record.explanation || '',
+      sort_order: record.sort_order ?? 0,
+    });
+    // 条件渲染字段（options/answer）在题型确定后再写入，避免被 Form 丢值
+    setTimeout(() => {
+      form.setFieldsValue({
+        options: normalizeOptionsForForm(record),
+        answer: record.answer || '',
+      });
+    }, 0);
+    // 再做一次兜底写入，覆盖可能的异步渲染清空
+    setTimeout(() => {
+      form.setFieldsValue({
+        options: normalizeOptionsForForm(record),
+        answer: record.answer || '',
+      });
+    }, 80);
+  };
 
   const fetchQuizList = async () => {
     setLoading(true);
@@ -85,23 +134,36 @@ const QuizPage: React.FC = () => {
   };
 
   const handleAdd = () => {
+    editingQuizRef.current = null;
     setEditingQuiz(null);
     form.resetFields();
-    form.setFieldsValue({
-      question_type: 1,
-      options: ['', '', '', ''],
-      sort_order: 0,
-    });
     setModalVisible(true);
   };
 
-  const handleEdit = (record: Quiz) => {
-    setEditingQuiz(record);
-    form.setFieldsValue({
-      ...record,
-      options: normalizeOptionsForForm(record),
-    });
-    setModalVisible(true);
+  const handleEdit = async (record: Quiz) => {
+    try {
+      const detailRes = await getQuizDetail(record.id);
+      const detail = detailRes.data;
+      editingQuizRef.current = detail;
+      setEditingQuiz(detail);
+      setModalVisible(true);
+    } catch (error) {
+      console.error('获取题目详情失败，回退使用列表数据:', error);
+      editingQuizRef.current = record;
+      setEditingQuiz(record);
+      setModalVisible(true);
+    }
+  };
+
+  const handleModalAfterOpenChange = (open: boolean) => {
+    if (!open) return;
+    form.resetFields();
+    const current = editingQuizRef.current;
+    if (current) {
+      fillEditForm(current);
+    } else {
+      fillCreateDefaults();
+    }
   };
 
   const handleDelete = (id: number) => {
@@ -221,6 +283,7 @@ const QuizPage: React.FC = () => {
               placeholder="筛选卡片"
               allowClear
               style={{ width: 250 }}
+              value={filterCardId}
               onChange={(value) => {
                 setFilterCardId(value);
                 setPagination((prev) => ({ ...prev, current: 1 }));
@@ -262,12 +325,14 @@ const QuizPage: React.FC = () => {
         open={modalVisible}
         onOk={handleSubmit}
         onCancel={() => setModalVisible(false)}
+        afterOpenChange={handleModalAfterOpenChange}
+        forceRender
         width={720}
         okText="保存"
         cancelText="取消"
         destroyOnClose
       >
-        <Form form={form} layout="vertical" preserve={false}>
+        <Form form={form} layout="vertical">
           <Form.Item
             name="card_id"
             label="所属卡片"
@@ -315,7 +380,7 @@ const QuizPage: React.FC = () => {
 
           <Form.Item noStyle shouldUpdate={(prev, cur) => prev.question_type !== cur.question_type}>
             {() => {
-              const t = form.getFieldValue('question_type');
+              const t = Number(form.getFieldValue('question_type'));
               if (t !== 1 && t !== 2) {
                 return (
                   <div style={{ marginBottom: 16, color: '#888', fontSize: 13 }}>
@@ -365,7 +430,7 @@ const QuizPage: React.FC = () => {
 
           <Form.Item noStyle shouldUpdate={(prev, cur) => prev.question_type !== cur.question_type}>
             {() => {
-              const t = form.getFieldValue('question_type');
+              const t = Number(form.getFieldValue('question_type'));
               if (t === 3) {
                 return (
                   <Form.Item

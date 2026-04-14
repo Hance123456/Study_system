@@ -40,7 +40,7 @@ router.get('/card/:cardId', authUser, async (req: Request, res: Response) => {
     }
 
     const quizzes = await query<Quiz[]>(
-      'SELECT id, card_id, question, question_type, options FROM quizzes WHERE card_id = ? AND status = 1 ORDER BY id ASC',
+      'SELECT id, card_id, question, question_type, options FROM quizzes WHERE card_id = ? AND status = 1 ORDER BY sort_order ASC, id ASC',
       [cardId]
     );
 
@@ -280,7 +280,7 @@ router.get('/list', authAdmin, async (req: Request, res: Response) => {
 
     const countResult = await query<{ total: number }[]>(countSql, countParams);
     const offset = (pageNum - 1) * pageSizeNum;
-    sql += ` ORDER BY q.id DESC LIMIT ${pageSizeNum} OFFSET ${offset}`;
+    sql += ` ORDER BY q.sort_order ASC, q.id ASC LIMIT ${pageSizeNum} OFFSET ${offset}`;
 
     const quizzes = await query<Quiz[]>(sql, params);
 
@@ -299,6 +299,35 @@ router.get('/list', authAdmin, async (req: Request, res: Response) => {
   } catch (error) {
     console.error('获取题目列表错误:', error);
     res.status(500).json({ code: 500, message: '服务器错误' });
+  }
+});
+
+// 获取题目详情（管理员）
+router.get('/detail/:id', authAdmin, async (req: Request, res: Response) => {
+  try {
+    const quizId = Number(req.params.id);
+    if (!Number.isFinite(quizId) || quizId <= 0) {
+      return res.status(400).json({ code: 400, message: '无效的题目ID' });
+    }
+
+    const rows = await query<any[]>(
+      `SELECT q.*, c.title as card_title, co.name as course_name
+       FROM quizzes q
+       JOIN cards c ON q.card_id = c.id
+       JOIN courses co ON c.course_id = co.id
+       WHERE q.id = ?
+       LIMIT 1`,
+      [quizId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ code: 404, message: '题目不存在' });
+    }
+
+    return res.json({ code: 200, data: rows[0] });
+  } catch (error) {
+    console.error('获取题目详情错误:', error);
+    return res.status(500).json({ code: 500, message: '服务器错误' });
   }
 });
 
@@ -380,11 +409,11 @@ router.put('/update/:id', authAdmin, async (req: Request, res: Response) => {
   }
 });
 
-// 删除题目（管理员）
+// 删除题目（管理员，物理删除）
 router.delete('/delete/:id', authAdmin, async (req: Request, res: Response) => {
   try {
     const quizId = Number(req.params.id);
-    await update('UPDATE quizzes SET status = 0 WHERE id = ?', [quizId]);
+    await update('DELETE FROM quizzes WHERE id = ?', [quizId]);
     res.json({ code: 200, message: '删除成功' });
   } catch (error) {
     res.status(500).json({ code: 500, message: '服务器错误' });

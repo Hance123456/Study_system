@@ -28,6 +28,7 @@ import { getCourseList } from '../../services/course';
 import type { Course } from '../../services/course';
 import type { UploadRequestOption } from 'rc-upload/lib/interface';
 import request from '../../utils/request';
+import { useNavigate } from 'react-router-dom';
 
 const { TextArea } = Input;
 
@@ -47,6 +48,7 @@ const normalizeCardFields = (row: any): Card => {
 };
 
 const CardPage: React.FC = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [ttsLoading, setTtsLoading] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
@@ -255,6 +257,10 @@ const CardPage: React.FC = () => {
     }
   };
 
+  const handleManageQuiz = (record: Card) => {
+    navigate(`/quiz?cardId=${record.id}`);
+  };
+
   const columns: ColumnsType<Card> = [
     {
       title: 'ID',
@@ -301,27 +307,33 @@ const CardPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 160,
       render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
-          <Popconfirm
-            title="确定要删除这个卡片吗？"
-            onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              删除
+        <div style={{ marginLeft: -12 }}>
+          <Space size={2}>
+            <Button type="link" size="small" onClick={() => handleManageQuiz(record)}>
+              测验
             </Button>
-          </Popconfirm>
-        </Space>
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+            >
+              编辑
+            </Button>
+            <Popconfirm
+              title="确定要删除这个卡片吗？"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+                删除
+              </Button>
+            </Popconfirm>
+          </Space>
+        </div>
       ),
     },
   ];

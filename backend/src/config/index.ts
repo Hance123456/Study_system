@@ -7,9 +7,20 @@ dotenv.config({
   path: path.join(__dirname, '../../.env'),
 });
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+const defaultUploadBaseDir = path.join(__dirname, '../../uploads');
+const uploadBaseDirRaw = process.env.UPLOAD_BASE_DIR || defaultUploadBaseDir;
+const uploadBaseDir = path.isAbsolute(uploadBaseDirRaw)
+  ? uploadBaseDirRaw
+  : path.resolve(__dirname, '../../', uploadBaseDirRaw);
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+
 export const config = {
   // 服务器配置
+  nodeEnv,
+  host: process.env.HOST || '0.0.0.0',
   port: process.env.PORT || 3000,
+  corsOrigin,
   
   // 数据库配置
   database: {
@@ -22,7 +33,7 @@ export const config = {
 
   // 文件上传配置
   upload: {
-    baseDir: path.join(__dirname, '../../uploads'),
+    baseDir: uploadBaseDir,
     maxFileSize: 10 * 1024 * 1024, // 10MB
     allowedImageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     allowedAudioTypes: ['audio/mpeg', 'audio/wav', 'audio/mp3'],

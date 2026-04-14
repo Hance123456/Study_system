@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net" modified="2026-04-10T10:30:00.000Z" agent="cursor" version="24.7.17" type="device">
+  <diagram id="db-physical" name="数据库物理模型图">
+    <mxGraphModel dx="1620" dy="920" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="数据库物理模型图（论文版简化字段）" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="560" y="20" width="520" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="users" value="users&#xa;--------------------------------&#xa;id BIGINT PK&#xa;openid VARCHAR(64) UNIQUE&#xa;nickname VARCHAR(64)&#xa;avatar VARCHAR(255)&#xa;created_at DATETIME&#xa;updated_at DATETIME" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="70" y="110" width="280" height="220" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="courses" value="courses&#xa;--------------------------------&#xa;id BIGINT PK&#xa;name VARCHAR(100)&#xa;description TEXT&#xa;sort_order INT&#xa;status TINYINT&#xa;created_at DATETIME&#xa;updated_at DATETIME" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="390" y="110" width="300" height="230" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cards" value="cards&#xa;--------------------------------&#xa;id BIGINT PK&#xa;course_id BIGINT FK -> courses.id&#xa;title VARCHAR(120)&#xa;content TEXT&#xa;audio_url VARCHAR(255)&#xa;sort_order INT&#xa;status TINYINT&#xa;created_at DATETIME&#xa;updated_at DATETIME" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="730" y="90" width="340" height="270" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="quizzes" value="quizzes&#xa;--------------------------------&#xa;id BIGINT PK&#xa;card_id BIGINT FK -> cards.id&#xa;question_type TINYINT&#xa;question TEXT&#xa;options JSON/TEXT&#xa;answer TEXT&#xa;sort_order INT&#xa;status TINYINT&#xa;created_at DATETIME&#xa;updated_at DATETIME" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="90" width="360" height="280" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="progress" value="user_progress&#xa;--------------------------------&#xa;id BIGINT PK&#xa;user_id BIGINT FK -> users.id&#xa;card_id BIGINT FK -> cards.id&#xa;mastery_level INT&#xa;last_learn_at DATETIME&#xa;next_review_at DATETIME&#xa;updated_at DATETIME" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="390" y="430" width="330" height="240" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="plans" value="review_plans&#xa;--------------------------------&#xa;id BIGINT PK&#xa;user_id BIGINT FK -> users.id&#xa;card_id BIGINT FK -> cards.id&#xa;plan_date DATE&#xa;stage INT&#xa;is_completed TINYINT&#xa;completed_at DATETIME&#xa;created_at DATETIME" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="760" y="430" width="330" height="250" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="checkin" value="checkin_records&#xa;--------------------------------&#xa;id BIGINT PK&#xa;user_id BIGINT FK -> users.id&#xa;stat_date DATE&#xa;study_duration INT&#xa;cards_learned INT&#xa;cards_reviewed INT&#xa;quiz_count INT&#xa;correct_count INT&#xa;created_at DATETIME" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="430" width="340" height="260" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="r1" value="1:N" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="courses" target="cards"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r2" value="1:N" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="cards" target="quizzes"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r3" value="1:N" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="users" target="progress"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r4" value="1:N" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="cards" target="progress"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r5" value="1:N" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="users" target="plans"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r6" value="1:N" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="cards" target="plans"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r7" value="1:N" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="users" target="checkin"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

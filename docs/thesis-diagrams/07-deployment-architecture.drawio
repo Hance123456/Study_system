@@ -1,0 +1,64 @@
+<mxfile host="app.diagrams.net" modified="2026-04-10T10:20:00.000Z" agent="cursor" version="24.7.17" type="device">
+  <diagram id="deploy-arch" name="部署架构图">
+    <mxGraphModel dx="1520" dy="860" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="本地环境 + 微信云托管双环境部署架构图" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="500" y="20" width="620" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="client" value="客户端&#xa;微信小程序 / PC浏览器" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="670" y="100" width="300" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="localBox" value="本地开发环境（备用）" style="swimlane;whiteSpace=wrap;html=1;rounded=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=30;" vertex="1" parent="1">
+          <mxGeometry x="120" y="230" width="610" height="520" as="geometry"/>
+        </mxCell>
+        <mxCell id="localApi" value="Backend 容器/进程&#xa;Node.js + Express" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="localBox">
+          <mxGeometry x="40" y="70" width="250" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="localDb" value="MySQL 本地实例" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="localBox">
+          <mxGeometry x="350" y="70" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="localUpload" value="本地上传目录&#xa;UPLOAD_BASE_DIR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="localBox">
+          <mxGeometry x="40" y="220" width="250" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="localEnv" value=".env / .env.local&#xa;DB_* / JWT_SECRET / HOST / PORT / CORS_ORIGIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="localBox">
+          <mxGeometry x="40" y="350" width="530" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="localBox" source="localApi" target="localDb"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l2" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="localBox" source="localApi" target="localUpload"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="cloudBox" value="微信云托管环境（生产）" style="swimlane;whiteSpace=wrap;html=1;rounded=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=30;" vertex="1" parent="1">
+          <mxGeometry x="860" y="230" width="670" height="520" as="geometry"/>
+        </mxCell>
+        <mxCell id="cloudBuild" value="CI/CD 构建&#xa;Dockerfile 自动构建镜像" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="cloudBox">
+          <mxGeometry x="40" y="70" width="260" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="cloudApi" value="云托管服务&#xa;Node.js + Express 容器" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="cloudBox">
+          <mxGeometry x="360" y="70" width="260" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="cloudDb" value="云 MySQL 实例" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="cloudBox">
+          <mxGeometry x="360" y="220" width="260" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="cloudStorage" value="云存储（对象存储）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="cloudBox">
+          <mxGeometry x="40" y="220" width="260" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="cloudEnv" value="云环境变量&#xa;DB_* / JWT_SECRET / HOST / PORT / CORS_ORIGIN / UPLOAD_BASE_DIR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="cloudBox">
+          <mxGeometry x="40" y="350" width="580" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="cloudBox" source="cloudBuild" target="cloudApi"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="cloudBox" source="cloudApi" target="cloudDb"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c3" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="cloudBox" source="cloudApi" target="cloudStorage"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e1" value="开发/调试" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="client" target="localApi">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="线上访问" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="client" target="cloudApi">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

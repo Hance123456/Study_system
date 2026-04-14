@@ -160,9 +160,67 @@ router.get('/calendar', authUser, async (req: Request, res: Response) => {
       ORDER BY stat_date DESC
     `, [userId]);
 
-    res.json({ code: 200, data: records });
+    const normalized = records.map((r) => ({
+      date: rowDateToYMD(r.stat_date),
+      is_checked_in: isCheckedInDb(r.is_checked_in) ? 1 : 0,
+      study_duration: Number(r.study_duration || 0),
+      cards_learned: Number(r.cards_learned || 0),
+    }));
+
+    res.json({ code: 200, data: normalized });
   } catch (error) {
     res.status(500).json({ code: 500, message: '服务器错误' });
+  }
+});
+
+// 获取某日打卡详情（用于日历点击展示）
+router.get('/calendar/day', authUser, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const date = String(req.query.date || '').trim();
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ code: 400, message: '日期格式应为 YYYY-MM-DD' });
+    }
+
+    const rows = await query<any[]>(
+      `SELECT stat_date, is_checked_in, study_duration, cards_learned, cards_reviewed, quiz_count, correct_count
+       FROM user_daily_stats
+       WHERE user_id = ? AND stat_date = ?
+       LIMIT 1`,
+      [userId, date],
+    );
+
+    if (rows.length === 0) {
+      return res.json({
+        code: 200,
+        data: {
+          date,
+          is_checked_in: 0,
+          study_duration: 0,
+          cards_learned: 0,
+          cards_reviewed: 0,
+          quiz_count: 0,
+          correct_count: 0,
+        },
+      });
+    }
+
+    const row = rows[0];
+    return res.json({
+      code: 200,
+      data: {
+        date: rowDateToYMD(row.stat_date),
+        is_checked_in: isCheckedInDb(row.is_checked_in) ? 1 : 0,
+        study_duration: Number(row.study_duration || 0),
+        cards_learned: Number(row.cards_learned || 0),
+        cards_reviewed: Number(row.cards_reviewed || 0),
+        quiz_count: Number(row.quiz_count || 0),
+        correct_count: Number(row.correct_count || 0),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ code: 500, message: '服务器错误' });
   }
 });
 

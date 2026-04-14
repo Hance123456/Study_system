@@ -18,6 +18,16 @@ function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
+function toMysqlDateTime(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
+}
+
 interface ReviewPlan {
   id: number;
   user_id: number;
@@ -34,14 +44,15 @@ interface ReviewPlan {
 router.get('/today', authUser, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateYMD();
 
     const plans = await query<ReviewPlan[]>(
       `SELECT rp.*, c.title as card_title, co.name as course_name 
        FROM review_plans rp 
        JOIN cards c ON rp.card_id = c.id 
        JOIN courses co ON c.course_id = co.id 
-       WHERE rp.user_id = ? AND rp.plan_date <= ? AND rp.is_completed = 0 
+       WHERE rp.user_id = ? AND rp.plan_date <= ? AND rp.is_completed = 0
+         AND c.status = 1
        ORDER BY rp.plan_date ASC, rp.review_stage ASC`,
       [userId, today]
     );
@@ -57,14 +68,15 @@ router.get('/today', authUser, async (req: Request, res: Response) => {
 router.get('/upcoming', authUser, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateYMD();
 
     const plans = await query<ReviewPlan[]>(
       `SELECT rp.*, c.title as card_title, co.name as course_name 
        FROM review_plans rp 
        JOIN cards c ON rp.card_id = c.id 
        JOIN courses co ON c.course_id = co.id 
-       WHERE rp.user_id = ? AND rp.plan_date > ? AND rp.is_completed = 0 
+       WHERE rp.user_id = ? AND rp.plan_date > ? AND rp.is_completed = 0
+         AND c.status = 1
        ORDER BY rp.plan_date ASC 
        LIMIT 20`,
       [userId, today]
@@ -137,7 +149,7 @@ router.post('/complete', authUser, async (req: Request, res: Response) => {
     const correctStreak = Number(streakRows[0]?.streak || 0);
 
     // 更新每日统计
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateYMD();
     await update(
       `UPDATE user_daily_stats 
        SET cards_reviewed = cards_reviewed + 1 
@@ -175,14 +187,14 @@ router.post('/complete', authUser, async (req: Request, res: Response) => {
     await insert(
       `INSERT INTO review_plans (user_id, card_id, plan_date, review_stage) 
        VALUES (?, ?, ?, ?)`,
-      [userId, plan.card_id, nextReviewDate.toISOString().split('T')[0], nextStage]
+      [userId, plan.card_id, localDateYMD(nextReviewDate), nextStage]
     );
 
     // 动态更新掌握程度（阶段越高掌握度越高）
     const masteryLevel = nextStage >= REVIEW_INTERVALS.length ? 4 : (nextStage >= 4 ? 3 : 2);
     await update(
       'UPDATE user_progress SET mastery_level = ?, next_review_at = ? WHERE user_id = ? AND card_id = ?',
-      [masteryLevel, nextReviewDate.toISOString(), userId, plan.card_id]
+      [masteryLevel, toMysqlDateTime(nextReviewDate), userId, plan.card_id]
     );
 
     res.json({ 
@@ -228,7 +240,7 @@ router.post('/add', authUser, async (req: Request, res: Response) => {
     await insert(
       `INSERT INTO review_plans (user_id, card_id, plan_date, review_stage) 
        VALUES (?, ?, ?, 1)`,
-      [userId, card_id, nextReviewDate.toISOString().split('T')[0]]
+      [userId, card_id, localDateYMD(nextReviewDate)]
     );
 
     // 更新或创建用户进度
@@ -241,12 +253,12 @@ router.post('/add', authUser, async (req: Request, res: Response) => {
       await insert(
         `INSERT INTO user_progress (user_id, card_id, mastery_level, next_review_at) 
          VALUES (?, ?, 1, ?)`,
-        [userId, card_id, nextReviewDate.toISOString()]
+        [userId, card_id, toMysqlDateTime(nextReviewDate)]
       );
     } else {
       await update(
         'UPDATE user_progress SET next_review_at = ? WHERE user_id = ? AND card_id = ?',
-        [nextReviewDate.toISOString(), userId, card_id]
+        [toMysqlDateTime(nextReviewDate), userId, card_id]
       );
     }
 
@@ -308,7 +320,7 @@ router.post('/add-today', authUser, async (req: Request, res: Response) => {
 router.get('/stats', authUser, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateYMD();
 
     // 今日待复习
     const todayResult = await query<{ count: number }[]>(
@@ -323,7 +335,7 @@ router.get('/stats', authUser, async (req: Request, res: Response) => {
     const weekResult = await query<{ count: number }[]>(
       `SELECT COUNT(*) as count FROM review_plans 
        WHERE user_id = ? AND plan_date <= ? AND is_completed = 0`,
-      [userId, weekEnd.toISOString().split('T')[0]]
+      [userId, localDateYMD(weekEnd)]
     );
 
     // 已完成复习总数

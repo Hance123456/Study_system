@@ -42,7 +42,7 @@ router.get('/list', async (req: Request, res: Response) => {
       params.push(`%${keyword}%`, `%${keyword}%`);
     }
 
-    sql += ' GROUP BY co.id ORDER BY co.sort_order ASC, co.id DESC';
+    sql += ' GROUP BY co.id ORDER BY co.sort_order ASC, co.id ASC';
 
     const courses = await query<Course[]>(sql, params);
 
@@ -162,7 +162,7 @@ router.put('/update/:id', authAdmin, async (req: Request, res: Response) => {
   }
 });
 
-// 删除课程（需要管理员权限）
+// 删除课程（需要管理员权限，物理删除）
 router.delete('/delete/:id', authAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -173,8 +173,8 @@ router.delete('/delete/:id', authAdmin, async (req: Request, res: Response) => {
       return res.status(404).json({ code: 404, message: '课程不存在' });
     }
 
-    // 软删除（设置 status = 0）
-    await update('UPDATE courses SET status = 0 WHERE id = ?', [id]);
+    // 物理删除（依赖外键级联删除关联卡片与学习数据）
+    await update('DELETE FROM courses WHERE id = ?', [id]);
 
     res.json({ code: 200, message: '删除成功' });
   } catch (error) {
