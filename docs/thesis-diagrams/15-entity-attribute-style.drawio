@@ -1,0 +1,104 @@
+<mxfile host="app.diagrams.net" modified="2026-04-15T21:45:00.000Z" agent="5.0" version="24.4.8" type="device">
+  <diagram id="entity-attribute-style" name="实体属性图（论文风格）">
+    <mxGraphModel dx="1680" dy="980" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="t" value="图4.x 系统主要实体属性图（论文风格）" style="text;html=1;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="560" y="20" width="480" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- 管理员 -->
+        <mxCell id="admin_e" value="管理员" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="180" y="180" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="admin_a1" value="管理员编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="40" y="90" width="130" height="45" as="geometry"/></mxCell>
+        <mxCell id="admin_a2" value="用户名" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="175" y="70" width="120" height="45" as="geometry"/></mxCell>
+        <mxCell id="admin_a3" value="密码" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="315" y="90" width="110" height="45" as="geometry"/></mxCell>
+        <mxCell id="admin_l1" edge="1" parent="1" source="admin_e" target="admin_a1" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="admin_l2" edge="1" parent="1" source="admin_e" target="admin_a2" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="admin_l3" edge="1" parent="1" source="admin_e" target="admin_a3" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- 学习用户 -->
+        <mxCell id="user_e" value="学习用户" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="180" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="user_a1" value="用户编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="455" y="85" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="user_a2" value="openid" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="560" y="65" width="120" height="42" as="geometry"/></mxCell>
+        <mxCell id="user_a3" value="昵称" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="690" y="85" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="user_a4" value="头像" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="805" y="125" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="user_a5" value="状态" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="715" y="250" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="user_l1" edge="1" parent="1" source="user_e" target="user_a1" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="user_l2" edge="1" parent="1" source="user_e" target="user_a2" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="user_l3" edge="1" parent="1" source="user_e" target="user_a3" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="user_l4" edge="1" parent="1" source="user_e" target="user_a4" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="user_l5" edge="1" parent="1" source="user_e" target="user_a5" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- 课程 -->
+        <mxCell id="course_e" value="课程" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="980" y="180" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="course_a1" value="课程编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="875" y="85" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="course_a2" value="课程名" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="980" y="60" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="course_a3" value="描述" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1100" y="90" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="course_a4" value="排序号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1120" y="240" width="95" height="42" as="geometry"/></mxCell>
+        <mxCell id="course_l1" edge="1" parent="1" source="course_e" target="course_a1" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="course_l2" edge="1" parent="1" source="course_e" target="course_a2" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="course_l3" edge="1" parent="1" source="course_e" target="course_a3" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="course_l4" edge="1" parent="1" source="course_e" target="course_a4" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- 卡片 -->
+        <mxCell id="card_e" value="卡片" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="520" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="card_a1" value="卡片编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="145" y="430" width="115" height="42" as="geometry"/></mxCell>
+        <mxCell id="card_a2" value="课程编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="270" y="410" width="115" height="42" as="geometry"/></mxCell>
+        <mxCell id="card_a3" value="标题" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="400" y="430" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="card_a4" value="内容" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="120" y="600" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="card_a5" value="图片URL" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="250" y="655" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="card_a6" value="音频URL" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="390" y="610" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="card_l1" edge="1" parent="1" source="card_e" target="card_a1" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="card_l2" edge="1" parent="1" source="card_e" target="card_a2" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="card_l3" edge="1" parent="1" source="card_e" target="card_a3" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="card_l4" edge="1" parent="1" source="card_e" target="card_a4" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="card_l5" edge="1" parent="1" source="card_e" target="card_a5" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="card_l6" edge="1" parent="1" source="card_e" target="card_a6" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- 题目 -->
+        <mxCell id="quiz_e" value="题目" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="730" y="520" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="quiz_a1" value="题目编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="620" y="430" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="quiz_a2" value="卡片编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="735" y="410" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="quiz_a3" value="题干" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="865" y="430" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="quiz_a4" value="题型" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="620" y="610" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="quiz_a5" value="选项" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="750" y="655" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="quiz_a6" value="答案" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="875" y="610" width="90" height="42" as="geometry"/></mxCell>
+        <mxCell id="quiz_l1" edge="1" parent="1" source="quiz_e" target="quiz_a1" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="quiz_l2" edge="1" parent="1" source="quiz_e" target="quiz_a2" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="quiz_l3" edge="1" parent="1" source="quiz_e" target="quiz_a3" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="quiz_l4" edge="1" parent="1" source="quiz_e" target="quiz_a4" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="quiz_l5" edge="1" parent="1" source="quiz_e" target="quiz_a5" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="quiz_l6" edge="1" parent="1" source="quiz_e" target="quiz_a6" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- 复习计划 -->
+        <mxCell id="plan_e" value="复习计划" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="520" width="140" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="plan_a1" value="计划编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1060" y="430" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="plan_a2" value="用户编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1175" y="410" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="plan_a3" value="卡片编号" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1295" y="430" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="plan_a4" value="计划日期" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1040" y="610" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="plan_a5" value="复习阶段" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1170" y="655" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="plan_a6" value="是否完成" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1305" y="610" width="110" height="42" as="geometry"/></mxCell>
+        <mxCell id="plan_l1" edge="1" parent="1" source="plan_e" target="plan_a1" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="plan_l2" edge="1" parent="1" source="plan_e" target="plan_a2" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="plan_l3" edge="1" parent="1" source="plan_e" target="plan_a3" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="plan_l4" edge="1" parent="1" source="plan_e" target="plan_a4" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="plan_l5" edge="1" parent="1" source="plan_e" target="plan_a5" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="plan_l6" edge="1" parent="1" source="plan_e" target="plan_a6" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

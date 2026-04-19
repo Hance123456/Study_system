@@ -1,53 +1,76 @@
-<mxfile host="app.diagrams.net" modified="2026-04-10T10:00:00.000Z" agent="cursor" version="24.7.17" type="device">
-  <diagram id="review-flow" name="智能复习流程图">
-    <mxGraphModel dx="1420" dy="820" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram id="review-flow-horizontal" name="复习队列与连续推进流程图（横版）">
+     <mxGraphModel dx="2400" dy="920" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="650" math="0" shadow="0">
       <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="t" value="智能复习业务流程图" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontStyle=1;fontSize=20;" vertex="1" parent="1">
-          <mxGeometry x="620" y="20" width="300" height="40" as="geometry"/>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-3" edge="1" parent="1" source="start" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="decision">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s1" value="开始" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="720" y="90" width="100" height="50" as="geometry"/>
+        <mxCell id="start" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontStyle=1;fontSize=14" value="进入复习页" vertex="1">
+          <mxGeometry height="55" width="140" x="90" y="122.5" as="geometry" />
         </mxCell>
-        <mxCell id="s2" value="进入复习页&#xa;加载今日计划" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="650" y="180" width="240" height="70" as="geometry"/>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-4" edge="1" parent="1" source="decision" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="today">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="d1" value="是否有待复习卡片？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="680" y="300" width="180" height="100" as="geometry"/>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-5" edge="1" parent="1" source="decision" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="upcoming">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s3" value="进入卡片复习模式" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="660" y="450" width="220" height="60" as="geometry"/>
+        <mxCell id="decision" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=14;fontStyle=1" value="列表类型？" vertex="1">
+          <mxGeometry height="70" width="110" x="260" y="115" as="geometry" />
         </mxCell>
-        <mxCell id="s4" value="用户点击&#xa;记住了 / 没记住" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
-          <mxGeometry x="660" y="550" width="220" height="70" as="geometry"/>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-8" edge="1" parent="1" source="today" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="click">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s5" value="更新 review_plans&#xa;+ user_progress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="660" y="660" width="220" height="70" as="geometry"/>
+        <mxCell id="today" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontStyle=1;fontSize=14" value="今日待复习列表" vertex="1">
+          <mxGeometry height="55" width="170" x="380" y="67.5" as="geometry" />
         </mxCell>
-        <mxCell id="d2" value="队列中还有下一张？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="680" y="760" width="180" height="100" as="geometry"/>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-9" edge="1" parent="1" source="click" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="card">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s6" value="跳转下一张复习卡片" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="980" y="780" width="220" height="60" as="geometry"/>
+        <mxCell id="click" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontSize=13" value="点击卡片&#xa;携带 from=review + queueIndex" vertex="1">
+          <mxGeometry height="55" width="200" x="590" y="67.5" as="geometry" />
         </mxCell>
-        <mxCell id="s7" value="提示今日复习完成&#xa;返回复习列表" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="350" y="780" width="220" height="60" as="geometry"/>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-11" edge="1" parent="1" source="card" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="feedback">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="end" value="结束" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="710" y="920" width="120" height="50" as="geometry"/>
+        <mxCell id="card" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontSize=14" value="卡片页&#xa;识别 from=review 模式" vertex="1">
+          <mxGeometry height="55" width="170" x="820" y="67.5" as="geometry" />
         </mxCell>
-        <mxCell id="e1" style="endArrow=block;html=1;" edge="1" parent="1" source="s1" target="s2"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e2" style="endArrow=block;html=1;" edge="1" parent="1" source="s2" target="d1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e3" value="是" style="endArrow=block;html=1;" edge="1" parent="1" source="d1" target="s3"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e4" value="否" style="endArrow=block;html=1;" edge="1" parent="1" source="d1" target="end"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e5" style="endArrow=block;html=1;" edge="1" parent="1" source="s3" target="s4"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e6" style="endArrow=block;html=1;" edge="1" parent="1" source="s4" target="s5"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e7" style="endArrow=block;html=1;" edge="1" parent="1" source="s5" target="d2"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e8" value="是" style="endArrow=block;html=1;" edge="1" parent="1" source="d2" target="s6"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e9" value="否" style="endArrow=block;html=1;" edge="1" parent="1" source="d2" target="s7"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e10" style="endArrow=block;html=1;" edge="1" parent="1" source="s6" target="s3"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e11" style="endArrow=block;html=1;" edge="1" parent="1" source="s7" target="end"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-12" edge="1" parent="1" source="feedback" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="feedback" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=14" value="用户反馈（记住/没记住）" vertex="1">
+          <mxGeometry height="55" width="200" x="1020" y="67.5" as="geometry" />
+        </mxCell>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-13" edge="1" parent="1" source="api" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="jump">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="api" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#7B1FA2;fontColor=#7B1FA2;fontSize=13" value="调用 /api/review/complete&#xa;更新计划与掌握度" vertex="1">
+          <mxGeometry height="70" width="210" x="1015" y="177.5" as="geometry" />
+        </mxCell>
+        <mxCell id="jump" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontSize=14" value="按队列索引自动跳转下一张" vertex="1">
+          <mxGeometry height="55" width="200" x="1020" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="6bwCvzKxVHLY0YtjcqMc-6" edge="1" parent="1" source="upcoming" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="preview">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="upcoming" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=14" value="即将到来列表" vertex="1">
+          <mxGeometry height="55" width="170" x="360" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="preview" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=13" value="进入只读预览模式&#xa;from=upcoming-review&#xa;不触发完成逻辑" vertex="1">
+          <mxGeometry height="75" width="230" x="575" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="1" source="start" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0" target="decision" value="" />
+        <mxCell id="a2" edge="1" parent="1" source="decision" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32;fontColor=#2E7D32;fontSize=12" target="today" value="今日待复习" />
+        <mxCell id="a3" edge="1" parent="1" source="decision" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;fontColor=#F57C00;fontSize=12" target="upcoming" value="即将到来" />
+        <mxCell id="a4" edge="1" parent="1" source="today" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32" target="queue" value="" />
+        <mxCell id="a5" edge="1" parent="1" source="queue" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32" target="click" value="" />
+        <mxCell id="a6" edge="1" parent="1" source="click" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32" target="card" value="" />
+        <mxCell id="a7" edge="1" parent="1" source="card" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0" target="feedback" value="" />
+        <mxCell id="a8" edge="1" parent="1" source="feedback" style="endArrow=classic;html=1;rounded=0;strokeColor=#7B1FA2" target="api" value="" />
+        <mxCell id="a9" edge="1" parent="1" source="api" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0" target="jump" value="" />
+        <mxCell id="a10" edge="1" parent="1" source="upcoming" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00" target="preview" value="" />
       </root>
     </mxGraphModel>
   </diagram>

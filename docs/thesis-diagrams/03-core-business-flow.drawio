@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" modified="2026-04-15T15:30:00.000Z" agent="5.0" version="24.4.8" etag="core-business-flow" type="device">
+  <diagram id="core-business-flow" name="核心业务闭环流程图">
+    <mxGraphModel dx="1750" dy="980" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="950" pageHeight="780" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="核心业务闭环：学习 - 测验 - 复习" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#263238" vertex="1" parent="1">
+          <mxGeometry x="280" y="30" width="420" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Learning -->
+        <mxCell id="learn" value="1. 学习阶段&#xa;课程 → 卡片浏览&#xa;阅读 / 听学 (TTS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontStyle=1;fontSize=13;shadow=1" vertex="1" parent="1">
+          <mxGeometry x="120" y="120" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Effective Learning Check -->
+        <mxCell id="effective" value="是否有效学习？&#xa;(停留 ≥ 3秒 + useUnload)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="340" y="130" width="130" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Record Learning -->
+        <mxCell id="record" value="记录学习行为&#xa;更新 user_progress&#xa;统计学习时长" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="170" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Quiz -->
+        <mxCell id="quiz" value="2. 测验阶段&#xa;按卡片拉取题目&#xa;支持单选/多选/判断/填空" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#7B1FA2;fontColor=#7B1FA2;fontStyle=1;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="120" y="280" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Feedback -->
+        <mxCell id="feedback" value="即时反馈 + 解析&#xa;记录正确/错误&#xa;更新错题本" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#7B1FA2;fontColor=#7B1FA2;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="340" y="280" width="170" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Review -->
+        <mxCell id="review" value="3. 复习阶段&#xa;今日待复习列表&#xa;本地 review_queue&#xa;from=review 模式" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontStyle=1;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="550" y="280" width="190" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Completion -->
+        <mxCell id="complete" value="完成反馈&#xa;调用 /api/review/complete&#xa;更新计划 + 掌握度&#xa;动态计算下次复习时间" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="340" y="410" width="220" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- Loop back -->
+        <mxCell id="loop" value="返回学习或复习循环" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="400" y="530" width="160" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows -->
+        <mxCell id="a1" value="进入卡片" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0;fontSize=11" edge="1" parent="1" source="learn" target="effective"/>
+        <mxCell id="a2" value="是" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32;fontSize=11" edge="1" parent="1" source="effective" target="record">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="410" y="170"/><mxPoint x="520" y="160"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="a3" value="进入测验" style="endArrow=classic;html=1;rounded=0;strokeColor=#7B1FA2;fontSize=11" edge="1" parent="1" source="record" target="quiz"/>
+        <mxCell id="a4" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#7B1FA2" edge="1" parent="1" source="quiz" target="feedback"/>
+        <mxCell id="a5" value="进入复习" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32;fontSize=11" edge="1" parent="1" source="feedback" target="review"/>
+        <mxCell id="a6" value="完成反馈" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32;fontSize=11" edge="1" parent="1" source="review" target="complete"/>
+        <mxCell id="a7" value="更新计划后返回" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0;fontSize=11" edge="1" parent="1" source="complete" target="loop"/>
+        <mxCell id="a8" value="继续学习/复习" style="endArrow=block;html=1;rounded=0;strokeColor=#1565C0;fontSize=11" edge="1" parent="1" source="loop" target="learn">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="480" y="600"/><mxPoint x="200" y="150"/></Array></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

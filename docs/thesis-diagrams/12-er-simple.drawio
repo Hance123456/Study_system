@@ -1,0 +1,99 @@
+<mxfile host="app.diagrams.net" modified="2026-04-15T21:10:00.000Z" agent="5.0" version="24.4.8" type="device">
+  <diagram id="er-simple" name="简洁ER图">
+    <mxGraphModel dx="1460" dy="860" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="碎片化学习系统简洁ER图" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="420" y="20" width="360" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- 实体 -->
+        <mxCell id="user" value="用户" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="80" y="200" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="course" value="课程" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="300" y="90" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="card" value="卡片" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="520" y="200" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="quiz" value="题目" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="760" y="90" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="plan" value="复习计划" style="shape=rectangle;whiteSpace=wrap;html=1;rounded=0;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="760" y="310" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- 关系（菱形） -->
+        <mxCell id="r1" value="包含" style="shape=rhombus;whiteSpace=wrap;html=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="430" y="105" width="70" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="r2" value="关联" style="shape=rhombus;whiteSpace=wrap;html=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="650" y="105" width="70" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="r3" value="学习" style="shape=rhombus;whiteSpace=wrap;html=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="300" y="205" width="70" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="r4" value="作答" style="shape=rhombus;whiteSpace=wrap;html=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="430" y="325" width="70" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="r5" value="生成" style="shape=rhombus;whiteSpace=wrap;html=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="650" y="325" width="70" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="r6" value="对应" style="shape=rhombus;whiteSpace=wrap;html=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="920" y="235" width="70" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- 连线 -->
+        <mxCell id="e1" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="course" target="r1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="r1" target="card"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e3" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="card" target="r2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="r2" target="quiz"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e5" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="user" target="r3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="r3" target="card"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e7" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="user" target="r4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="r4" target="quiz"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e9" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="user" target="r5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="r5" target="plan"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e11" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="plan" target="r6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="endArrow=none;html=1;strokeWidth=1.5;" edge="1" parent="1" source="r6" target="card"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- 基数标注 -->
+        <mxCell id="c1" value="1" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="410" y="90" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="c2" value="N" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="505" y="178" width="20" height="20" as="geometry"/></mxCell>
+
+        <mxCell id="c3" value="1" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="635" y="90" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="c4" value="N" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="730" y="90" width="20" height="20" as="geometry"/></mxCell>
+
+        <mxCell id="c5" value="M" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="270" y="205" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="c6" value="N" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="495" y="260" width="20" height="20" as="geometry"/></mxCell>
+
+        <mxCell id="c7" value="M" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="275" y="318" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="c8" value="N" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="730" y="165" width="20" height="20" as="geometry"/></mxCell>
+
+        <mxCell id="c9" value="1" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="630" y="360" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="c10" value="N" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="740" y="360" width="20" height="20" as="geometry"/></mxCell>
+
+        <mxCell id="c11" value="N" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="900" y="300" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="c12" value="1" style="text;html=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="650" y="245" width="20" height="20" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

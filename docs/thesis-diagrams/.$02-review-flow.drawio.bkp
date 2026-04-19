@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" modified="2026-04-15T17:40:00.000Z" agent="5.0" version="24.4.8" etag="review-flow-h-v3" type="device">
+  <diagram id="review-flow-horizontal" name="复习队列与连续推进流程图（横版）">
+    <mxGraphModel dx="2400" dy="920" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <mxCell id="title" value="复习队列与连续推进流程（横版）" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#263238" vertex="1" parent="1">
+          <mxGeometry x="480" y="20" width="420" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Start -->
+        <mxCell id="start" value="进入复习页" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontStyle=1;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="140" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Decision -->
+        <mxCell id="decision" value="列表类型？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="260" y="115" width="110" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Today Review -->
+        <mxCell id="today" value="今日待复习列表" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontStyle=1;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="420" y="80" width="170" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="queue" value="生成 review_queue&#xa;写入本地存储" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="630" y="80" width="170" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="click" value="点击卡片&#xa;携带 from=review + queueIndex" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1B5E20;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="840" y="80" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="card" value="卡片页&#xa;识别 from=review 模式" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="1080" y="80" width="170" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="feedback" value="用户反馈（记住/没记住）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="1290" y="80" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="调用 /api/review/complete&#xa;更新计划与掌握度" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#7B1FA2;fontColor=#7B1FA2;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="1530" y="80" width="210" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="jump" value="按队列索引自动跳转下一张" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1565C0;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="1770" y="80" width="200" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Upcoming -->
+        <mxCell id="upcoming" value="即将到来列表" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="420" y="220" width="170" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="preview" value="进入只读预览模式&#xa;from=upcoming-review&#xa;不触发完成逻辑" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontColor=#E65100;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="630" y="210" width="230" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows -->
+        <mxCell id="a1" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0" edge="1" parent="1" source="start" target="decision"/>
+        <mxCell id="a2" value="今日待复习" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32;fontColor=#2E7D32;fontSize=12" edge="1" parent="1" source="decision" target="today"/>
+        <mxCell id="a3" value="即将到来" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;fontColor=#F57C00;fontSize=12" edge="1" parent="1" source="decision" target="upcoming"/>
+        
+        <mxCell id="a4" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32" edge="1" parent="1" source="today" target="queue"/>
+        <mxCell id="a5" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32" edge="1" parent="1" source="queue" target="click"/>
+        <mxCell id="a6" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#2E7D32" edge="1" parent="1" source="click" target="card"/>
+        <mxCell id="a7" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0" edge="1" parent="1" source="card" target="feedback"/>
+        <mxCell id="a8" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#7B1FA2" edge="1" parent="1" source="feedback" target="api"/>
+        <mxCell id="a9" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#1565C0" edge="1" parent="1" source="api" target="jump"/>
+        
+        <mxCell id="a10" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00" edge="1" parent="1" source="upcoming" target="preview"/>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
