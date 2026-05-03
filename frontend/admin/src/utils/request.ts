@@ -2,7 +2,7 @@ import axios from 'axios';
 import { message } from 'antd';
 
 const request = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'https://studybackend-244783-5-1364761212.sh.run.tcloudbase.com/api',
   timeout: 10000,
 });
 

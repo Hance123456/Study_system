@@ -2,13 +2,48 @@ import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
+import https from 'https';
 import axios from 'axios';
 import { query, insert, update } from '../utils/database';
 import { config } from '../config';
 import { authUser } from '../middlewares/auth';
 import { localDateYMD } from '../utils/date';
+import { isCosEnabled, publishBuffer } from '../utils/cosStorage';
 
 const router = Router();
+
+const WX_JSCODE2SESSION = 'https://api.weixin.qq.com/sns/jscode2session';
+
+/** 云托管等环境出口偶现自签证书（DEPTH_ZERO_SELF_SIGNED_CERT），仅对微信官方域名在失败时降级校验 */
+async function wxJscode2sessionGet(params: Record<string, string>) {
+  const axiosOpts = {
+    params,
+    timeout: 15000,
+    proxy: false as const,
+    validateStatus: () => true,
+    transformResponse: [(raw: unknown) => {
+      if (typeof raw !== 'string') return raw;
+      try {
+        return JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        return { _parse_error: true, _raw: raw?.slice?.(0, 200) };
+      }
+    }],
+  };
+  try {
+    return await axios.get<Record<string, unknown>>(WX_JSCODE2SESSION, axiosOpts);
+  } catch (err: unknown) {
+    const e = err as { code?: string; cause?: { code?: string } };
+    const code = e.code || e.cause?.code;
+    if (code === 'DEPTH_ZERO_SELF_SIGNED_CERT' || code === 'SELF_SIGNED_CERT_IN_CHAIN') {
+      return await axios.get<Record<string, unknown>>(WX_JSCODE2SESSION, {
+        ...axiosOpts,
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      });
+    }
+    throw err;
+  }
+}
 
 interface User {
   id: number;
@@ -23,28 +58,31 @@ interface User {
   last_login_at: string;
 }
 
-// 下载微信头像到本地，并返回相对 URL（/uploads/images/avatars/xxx.png）
+// 下载微信头像：可选写入 COS（配置 COS_* 后）或本地 uploads
 const saveWeChatAvatar = async (avatarUrl: string, openid: string): Promise<string | null> => {
   try {
     if (!avatarUrl) return null;
 
     const res = await axios.get<ArrayBuffer>(avatarUrl, { responseType: 'arraybuffer' });
 
+    const extMatch = avatarUrl.match(/\.(jpg|jpeg|png|gif|webp)/i);
+    const ext = extMatch ? extMatch[0] : '.jpg';
+    const fileName = `${openid}_${Date.now()}${ext}`;
+    const key = `images/avatars/${fileName}`;
+    const buffer = Buffer.from(res.data);
+    const contentType = (res.headers['content-type'] as string) || 'image/jpeg';
+
+    if (isCosEnabled()) {
+      return await publishBuffer(buffer, key, contentType);
+    }
+
     const avatarDir = path.join(config.upload.baseDir, 'images', 'avatars');
     if (!fs.existsSync(avatarDir)) {
       fs.mkdirSync(avatarDir, { recursive: true });
     }
-
-    const extMatch = avatarUrl.match(/\.(jpg|jpeg|png|gif|webp)/i);
-    const ext = extMatch ? extMatch[0] : '.jpg';
-    const fileName = `${openid}_${Date.now()}${ext}`;
     const filePath = path.join(avatarDir, fileName);
-
-    fs.writeFileSync(filePath, Buffer.from(res.data));
-
-    // 静态资源通过 /uploads 映射到 upload.baseDir
-    const relativeUrl = `/uploads/images/avatars/${fileName}`;
-    return relativeUrl;
+    fs.writeFileSync(filePath, buffer);
+    return `/uploads/images/avatars/${fileName}`;
   } catch (err) {
     console.error('保存微信头像失败:', err);
     return null;
@@ -73,30 +111,43 @@ router.post('/wxlogin', async (req: Request, res: Response) => {
     let unionid: string | null = null;
 
     try {
-      const wxRes = await axios.get('https://api.weixin.qq.com/sns/jscode2session', {
-        params: {
-          appid: config.wechat.appId,
-          secret: config.wechat.appSecret,
-          js_code: code,
-          grant_type: 'authorization_code',
-        },
+      const wxRes = await wxJscode2sessionGet({
+        appid: config.wechat.appId,
+        secret: config.wechat.appSecret,
+        js_code: code,
+        grant_type: 'authorization_code',
       });
 
-      if (wxRes.data.errcode || !wxRes.data.openid) {
-        console.error('微信登录失败:', wxRes.data);
-        return res.status(400).json({
-          code: 400,
-          message: wxRes.data.errmsg || '微信登录失败',
+      if (wxRes.status !== 200) {
+        console.error('微信 jscode2session HTTP 非200:', wxRes.status, wxRes.data);
+        return res.status(502).json({
+          code: 502,
+          message: `微信接口 HTTP ${wxRes.status}，请稍后重试或查看服务器日志`,
         });
       }
 
-      openid = wxRes.data.openid;
-      unionid = wxRes.data.unionid || null;
-    } catch (err) {
-      console.error('调用微信 jscode2session 接口错误:', err);
+      const wxData = wxRes.data || {};
+      const errcode = wxData.errcode as number | undefined;
+      const errmsg = wxData.errmsg as string | undefined;
+      const oid = wxData.openid as string | undefined;
+
+      if (errcode || !oid) {
+        console.error('微信登录失败:', wxData);
+        return res.status(400).json({
+          code: 400,
+          message: errmsg || '微信登录失败',
+        });
+      }
+
+      openid = oid;
+      unionid = (wxData.unionid as string | undefined) || null;
+    } catch (err: unknown) {
+      const e = err as { message?: string; code?: string };
+      console.error('调用微信 jscode2session 接口错误:', e?.message || err, 'code=', e?.code);
       return res.status(500).json({
         code: 500,
-        message: '微信登录接口错误',
+        message:
+          '访问微信登录接口失败（多为云托管无外网出口或 DNS；亦可查看日志中的 errno）',
       });
     }
 

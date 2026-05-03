@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { uploadImage, uploadAudio, getFileRelativeUrl, deleteFile } from '../utils/upload';
+import { uploadImage, uploadAudio } from '../utils/upload';
+import { publishLocalUpload, deleteStoredAsset } from '../utils/cosStorage';
 import path from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
@@ -66,13 +67,13 @@ const generateTtsAudio = (text: string, outputPath: string, voice = 'zh-CN-Xiaox
 };
 
 // 上传图片
-router.post('/image', uploadImage.single('file'), (req: Request, res: Response) => {
+router.post('/image', uploadImage.single('file'), async (req: Request, res: Response) => {
   try {
     if (!req.file) {
       return res.status(400).json({ code: 400, message: '请选择要上传的图片' });
     }
 
-    const fileUrl = getFileRelativeUrl(req.file.path);
+    const fileUrl = await publishLocalUpload(req.file.path);
 
     res.json({
       code: 200,
@@ -90,19 +91,21 @@ router.post('/image', uploadImage.single('file'), (req: Request, res: Response) 
 });
 
 // 批量上传图片
-router.post('/images', uploadImage.array('files', 10), (req: Request, res: Response) => {
+router.post('/images', uploadImage.array('files', 10), async (req: Request, res: Response) => {
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || files.length === 0) {
       return res.status(400).json({ code: 400, message: '请选择要上传的图片' });
     }
 
-    const results = files.map((file) => ({
-      filename: file.filename,
-      originalName: file.originalname,
-      size: file.size,
-      url: getFileRelativeUrl(file.path),
-    }));
+    const results = await Promise.all(
+      files.map(async (file) => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        size: file.size,
+        url: await publishLocalUpload(file.path),
+      })),
+    );
 
     res.json({
       code: 200,
@@ -115,13 +118,13 @@ router.post('/images', uploadImage.array('files', 10), (req: Request, res: Respo
 });
 
 // 上传音频
-router.post('/audio', uploadAudio.single('file'), (req: Request, res: Response) => {
+router.post('/audio', uploadAudio.single('file'), async (req: Request, res: Response) => {
   try {
     if (!req.file) {
       return res.status(400).json({ code: 400, message: '请选择要上传的音频' });
     }
 
-    const fileUrl = getFileRelativeUrl(req.file.path);
+    const fileUrl = await publishLocalUpload(req.file.path);
 
     res.json({
       code: 200,
@@ -162,7 +165,7 @@ router.post('/tts', async (req: Request, res: Response) => {
 
     await generateTtsAudio(content, outputPath, voice || 'zh-CN-XiaoxiaoNeural', rate || '+0%');
 
-    const fileUrl = getFileRelativeUrl(outputPath);
+    const fileUrl = await publishLocalUpload(outputPath);
 
     res.json({
       code: 200,
@@ -178,20 +181,16 @@ router.post('/tts', async (req: Request, res: Response) => {
   }
 });
 
-// 删除文件
-router.delete('/file', (req: Request, res: Response) => {
+// 删除文件（本地 /uploads 或 COS 公网 URL）
+router.delete('/file', async (req: Request, res: Response) => {
   try {
     const { url } = req.body;
     if (!url) {
       return res.status(400).json({ code: 400, message: '请提供文件 URL' });
     }
 
-    // 从 URL 中提取相对路径（兼容：完整 URL 或 /uploads/... 相对路径）
-    const urlPath = String(url || '').includes('://') ? new URL(url).pathname : String(url || '');
-    const relativePath = urlPath.replace(/^\/?uploads\//, '');
-    const filePath = path.join(config.upload.baseDir, relativePath);
-
-    if (deleteFile(filePath)) {
+    const ok = await deleteStoredAsset(String(url));
+    if (ok) {
       res.json({ code: 200, message: '删除成功' });
     } else {
       res.status(404).json({ code: 404, message: '文件不存在' });

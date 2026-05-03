@@ -16,6 +16,14 @@ import checkinRouter from './routes/checkin';
 
 const app = express();
 
+// 云托管排查：若此处 host 仍是 localhost，说明 DB_* 未注入到容器进程（检查控制台环境变量是否绑定运行实例并已重新发布）
+console.log(
+  '[boot] DB target:',
+  `${config.database.host}:${config.database.port}`,
+  '| process.env.DB_HOST =',
+  process.env.DB_HOST ?? '(unset)',
+);
+
 // 中间件配置
 app.use(cors({ origin: config.corsOrigin === '*' ? true : config.corsOrigin }));
 app.use(express.json());

@@ -1,39 +1,41 @@
-# Study System API — 云托管 / 通用容器部署
-# 包含：Node 后端 + Python3 + edge-tts（与 routes/upload.ts 中 TTS 逻辑一致）
-#
-# 构建：docker build -t study-api .
-# 运行：docker run -p 3000:3000 -e PORT=3000 -e DB_HOST=... study-api
-#
-# 云托管：在控制台配置环境变量（DB_*、JWT_SECRET、WECHAT_*、CORS_ORIGIN 等），
-#        健康检查路径填 /health
+# Study System API - 微信云托管优化版
+# 支持 edge-tts + TypeScript + 生产环境优化
 
-FROM node:20-bookworm
+FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# Python：upload.ts 使用 `python -m edge_tts`（需 PATH 中有 python）
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
+# 安装 Python 和 edge-tts（TTS功能需要）
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python-is-python3 \
     ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m pip install --no-cache-dir --break-system-packages edge-tts
 
-# edge-tts（Debian bookworm 需 break-system-packages）
-RUN python3 -m pip install --no-cache-dir --break-system-packages edge-tts
-
-COPY package.json package-lock.json ./
+# 复制依赖文件并安装
+COPY package*.json ./
 RUN npm ci
 
+# 复制源码并构建
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
+RUN npm prune --omit=dev
 
+# 创建必要的目录
 RUN mkdir -p uploads
 
+# 生产环境变量
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
+ENV PORT=3000
+
+# 健康检查路径（云托管需要）
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/health || exit 1
 
 EXPOSE 3000
 
